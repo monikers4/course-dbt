@@ -11,4 +11,4 @@ final as
 
     from source 
 )
-select * from final
+select *, order_id || '-' || product_id as unique_id from final

@@ -1,0 +1,52 @@
+version: 2
+
+models:
+  - name: stg_postgres__addresses
+    description: Address table that contains address, 5-digit zip code, state and country information
+    columns:
+      - name: address_id
+        tests:
+          - unique
+          - not_null
+  - name: stg_postgres__events
+    description: Event table that contains information about event type, page url, user, session, order and product identifiers.
+    columns:
+      - name: event_id
+        tests:
+          - unique
+          - not_null
+  - name: stg_postgres__order_items
+    description: Order item table that contains information about order and product identifiers.
+    columns:
+      - name: unique_id
+        tests:
+          - unique
+          - not_null
+  - name: stg_postgres__orders
+    description: Order table that contains information about order, promo, shipping, tracking, delivery, address, and user details.
+    columns:
+      - name: order_id
+        tests:
+          - unique
+          - not_null
+  - name: stg_postgres__products
+    description: Product table that contains information about product name, price and inventory.
+    columns:
+      - name: product_id
+        tests:
+          - unique
+          - not_null
+  - name: stg_postgres__promos
+    description: Promotion table that contains information about discount and promo status.
+    columns:
+      - name: promo_id
+        tests:
+          - unique
+          - not_null
+  - name: stg_postgres__users
+    description: User table that contains name, phone number, email and address identifier.
+    columns:
+      - name: user_id
+        tests:
+          - unique
+          - not_null

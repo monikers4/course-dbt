@@ -20,6 +20,7 @@ Try running the following commands:
 - On average, how long does an order take from being placed to being delivered? ~3.89 days
 - How many users have only made one purchase? 25 Two purchases? 28 Three+ purchases? 71
 
+<<<<<<< HEAD
 ORDER_COUNT|CUSTOMER_COUNT
 --- | --- 
 1|25
@@ -89,3 +90,6 @@ group by 1
 ) a
   ```
 </details>
+=======
+- On average, how many unique sessions do we have per hour? ~16.3 unique sessions per hourd
+>>>>>>> 716ec43 (update to conform to dbt naming conventions)
