@@ -111,8 +111,10 @@ count_if(order_count>1)/count(user_id) * 100 as pct_repeat_purchaser_rate
 from user_orders
 ```
 **Answer:** 79.8% 
-TOTAL_PURCHASERS  REPEAT_PURCHASERS PCT_REPEAT_PURCHASER_RATE
-124 99  79.838700
+
+TOTAL_PURCHASERS|REPEAT_PURCHASERS|PCT_REPEAT_PURCHASER_RATE
+--- | --- | ---
+124|99|79.838700
 
 **What are good indicators of a user who will likely purchase again? **
 Those who purchase regularly
