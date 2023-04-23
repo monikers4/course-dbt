@@ -1,0 +1,30 @@
+version: 2
+
+models:
+  - name: dim_users
+    description: Table that contains information about user such as name, email, phone number, address, etc.
+    columns:
+      - name: user_id
+        tests:
+          - unique
+          - not_null
+  - name: dim_products
+    description: Table that contains information about product, product name, price and inventory
+    columns:
+      - name: product_id
+        tests:
+          - unique
+          - not_null
+      - name: price
+        tests:
+          - not_null
+          - greater_than_0
+  - name: fct_orders
+    description: Order level details including order total, order quantity, shipping fee, order status and delivery information
+    columns:
+      - name: order_id
+        tests:
+          - unique
+          - not_null
+
+
