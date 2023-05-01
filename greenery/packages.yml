@@ -5,3 +5,6 @@ packages:
 
   - package: calogica/dbt_expectations
     version: 0.8.5
+
+  - package: dbt-labs/codegen
+    version: 0.8.1

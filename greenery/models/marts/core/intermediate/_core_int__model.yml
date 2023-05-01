@@ -1,0 +1,10 @@
+version: 2
+
+models:
+  - name: int_user_session_events
+    description: Table that contains event sessions summarized to user and session id granularity.
+    columns:
+      - name: unique_key
+        tests:
+          - unique
+          - not_null

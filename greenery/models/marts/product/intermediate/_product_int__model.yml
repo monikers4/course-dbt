@@ -15,3 +15,17 @@ models:
         tests:
           - unique
           - not_null
+  - name: int_product_order_items
+    description: Product order item details such as product_id, order_id, user_id, price, quantity, and order status.
+    columns:
+      - name: unique_key
+        tests:
+          - unique
+          - not_null
+  - name: int_product_user_session_events
+    description: Event sessions summarized to product, user and session id granularity.
+    columns:
+      - name: unique_key
+        tests:
+          - unique
+          - not_null
