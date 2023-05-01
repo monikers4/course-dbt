@@ -143,3 +143,126 @@ I created a daily product aggregated fact table (fct_product_activity_daily) tab
 **Tests**
 For the tests, I put in basic tests to validate for uniqueness (based on the granularity of the table.)
 I also created a generic test to check that a field/column doesn't have a negative value. (e.g., added this to the dim_products model to ensure no negative values for price.) I also installed the dbt_utils and great_expectations packages to scan for other useful tests. I used dbt_expectations.expect_column_pair_values_A_to_be_greater_than_B test to check that page_views >= add_to_cart for the fct_product_activity_daily model.
+
+
+### Week 3 Project 
+**Part 1**
+What is our overall conversion rate?
+62.46%
+<details>
+  <summary>SQL</summary>
+
+  ```
+with base as (
+select 
+count(distinct session_id) session_count,
+count(distinct order_id) as order_count
+from  DEV_DB.DBT_MONICAKIM4GMAILCOM.STG_POSTGRES__EVENTS
+    )
+
+select
+*,
+(order_count/session_count)*100 as conversion_rate
+from base
+  ```
+</details>
+
+What is our conversion rate by product? (Top 10 based on Conversion Rate)
+| PRODUCT_NAME      | SESSIONS | ORDERS | CONVERSION_RATE |
+|-------------------|----------|--------|-----------------|
+| String of pearls  |       64 |     39 |         60.9375 |
+| Arrow Head        |       63 |     35 |         55.5556 |
+| Cactus            |       55 |     30 |         54.5455 |
+| ZZ Plant          |       63 |     34 |         53.9683 |
+| Bamboo            |       67 |     36 |         53.7313 |
+| Rubber Plant      |       54 |     28 |         51.8519 |
+| Monstera          |       49 |     25 |         51.0204 |
+| Calathea Makoyana |       53 |     27 |         50.9434 |
+| Fiddle Leaf Fig   |       56 |     28 |              50 |
+| Majesty Palm      |       67 |     33 |         49.2537 |
+
+<details>
+  <summary>SQL</summary>
+
+  ```
+with sessions as (
+  select 
+  product_id
+  ,product_name
+  ,count(distinct session_id) as sessions
+  from int_product_user_session_events
+  group by 1,2
+),
+orders as (
+  select 
+  product_id
+  ,count(distinct order_id) as orders
+  from int_product_order_items 
+  group by 1
+)
+
+select 
+product_name,
+sessions,
+orders,
+(orders/sessions)*100 as conversion_rate
+from sessions s
+inner join orders o
+    on s.product_id = o.product_id
+group by 1,2,3
+order by 4 desc
+  ```
+</details>
+
+**Part 2**
+Created a macro to aggregate based on event type [agg_event_types](https://github.com/monikers4/course-dbt/blob/main/greenery/macros/agg_event_types.sql) and later used this macro in int_user_session_events and int_product_user_session_events models.
+
+**Part 3**
+Done. [Macro](https://github.com/monikers4/course-dbt/blob/main/greenery/macros/grant_role.sql) and [post-hook embedding](https://github.com/monikers4/course-dbt/blob/main/greenery/dbt_project.yml)
+
+Verified in query history:
+<img width="1073" alt="image" src="https://user-images.githubusercontent.com/120066171/235427611-aa132e72-dad0-434c-8be5-5c6b03f0985e.png">
+
+**Part 4**
+Did this last week, but created a [packages.yml](https://github.com/monikers4/course-dbt/blob/main/greenery/packages.yml) file and used in model tests. 
+
+**Part 5**
+Modified the DAG to add a couple of new intermediate tables 
+- int_user_session_events (to practice using a macro and for loop)
+- int_product_user_session_events (to practice macro + set up to answer conversion question)
+- int_product_order_items (to answer product conversion question above)
+Note:  The conversion definition was slightly different than how I set up the product tables from week 2 assignment. I originally set-up the product funnel to look at overall views instead of based on unique sessions.
+<img width="1038" alt="image" src="https://user-images.githubusercontent.com/120066171/235424175-9c8d706a-8557-4966-bd07-2c95616af94b.png">
+
+**Part 6**
+Which products had their inventory change from week 2 to week 3?
+| NAME             | PRICE | INVENTORY | PREVIOUS_INVENTORY | DBT_UPDATED_AT          | DBT_VALID_TO |
+|------------------|-------|-----------|--------------------|-------------------------|--------------|
+| Bamboo           | 15.25 | 44        | 56                 | 2023-05-01 07:10:24.904 |              |
+| Monstera         | 50.75 | 50        | 64                 | 2023-05-01 07:10:24.904 |              |
+| Philodendron     | 45    | 15        | 25                 | 2023-05-01 07:10:24.904 |              |
+| Pothos           | 30.5  | 0         | 20                 | 2023-05-01 07:10:24.904 |              |
+| String of pearls | 80.5  | 0         | 10                 | 2023-05-01 07:10:24.904 |              |
+| ZZ Plant         | 25    | 53        | 89                 | 2023-05-01 07:10:24.904 |              |
+
+<details>
+  <summary>SQL</summary>
+
+  ```
+  with changes as (
+select 
+name,
+price,
+inventory, 
+lag(inventory) over(partition by name order by dbt_updated_at) as previous_inventory,
+dbt_updated_at, 
+--lag(dbt_updated_at) over(partition by name order by dbt_updated_at) as previous_updated_at,
+dbt_valid_to
+from DEV_DB.DBT_MONICAKIM4GMAILCOM.PRODUCTS_SNAPSHOT
+  )
+select * from changes where 
+previous_inventory is not null
+and dbt_valid_to is null
+order by name, dbt_updated_at
+  ```
+</details>
