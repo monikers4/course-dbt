@@ -266,3 +266,172 @@ and dbt_valid_to is null
 order by name, dbt_updated_at
   ```
 </details>
+
+### Week 4 Project 
+
+**Part 1**
+
+Which products had their inventory change from week 3 to week 4?  
+
+| NAME             | PRICE | INVENTORY | PREVIOUS_INVENTORY | DBT_UPDATED_AT      |
+|------------------|-------|-----------|--------------------|---------------------|
+| Bamboo           | 15.25 |        23 |                 44 | 2023-05-06 22:22:14 |
+| Monstera         | 50.75 |        31 |                 50 | 2023-05-06 22:22:14 |
+| Philodendron     |    45 |        30 |                 15 | 2023-05-06 22:22:14 |
+| Pothos           |  30.5 |        20 |                  0 | 2023-05-06 22:22:14 |
+| String of pearls |  80.5 |        10 |                  0 | 2023-05-06 22:22:14 |
+| ZZ Plant         |    25 |        41 |                 53 | 2023-05-06 22:22:14 |
+
+Which products had the most fluctuations in inventory? 
+
+| NAME             | FLUCTUATIONS_OVERALL |
+|------------------|----------------------|
+| String of pearls |                   68 |
+| Pothos           |                   60 |
+| Philodendron     |                   51 |
+| ZZ Plant         |                   48 |
+| Monstera         |                   46 |
+| Bamboo           |                   33 |
+
+Did we have any items go out of stock in the last 3 weeks? 
+
+| NAME             | INVENTORY | DBT_UPDATED_AT     |
+|------------------|-----------|--------------------|
+| Pothos           |         0 | 2023-05-01 7:10:25 |
+| String of pearls |         0 | 2023-05-01 7:10:25 |
+
+<details>
+  <summary>SQL</summary>
+
+  ```
+/* Product inventory changes this last week */
+with changes as (
+select 
+name,
+price,
+inventory, 
+lag(inventory) over(partition by name order by dbt_updated_at) as previous_inventory,
+dbt_updated_at, 
+--lag(dbt_updated_at) over(partition by name order by dbt_updated_at) as previous_updated_at,
+dbt_valid_to
+from DEV_DB.DBT_MONICAKIM4GMAILCOM.PRODUCTS_SNAPSHOT
+)
+select * from changes where 
+previous_inventory is not null
+and dbt_valid_to is null
+order by name, dbt_updated_at
+
+
+/* Products with most weekly fluctuations */
+with changes as (
+select 
+name,
+price,
+inventory, 
+lag(inventory) over(partition by name order by dbt_updated_at) as previous_inventory,
+inventory - lag(inventory) over(partition by name order by dbt_updated_at) as inventory_change,
+dbt_updated_at, 
+--lag(dbt_updated_at) over(partition by name order by dbt_updated_at) as previous_updated_at,
+dbt_valid_to
+from DEV_DB.DBT_MONICAKIM4GMAILCOM.PRODUCTS_SNAPSHOT
+)
+
+select
+name,
+sum(abs(inventory_change)) as fluctuations_overall
+from changes
+where inventory_change is not null
+group by 1
+order by 2 desc
+
+/* Items that went out of stock - within last 3 weeks */
+select 
+name,
+inventory, 
+dbt_updated_at
+from DEV_DB.DBT_MONICAKIM4GMAILCOM.PRODUCTS_SNAPSHOT
+where inventory = 0
+and datediff(week,dbt_updated_at, current_date) <= 3 
+
+  ```
+</details>
+  
+**Part 2**
+  
+How are our users moving through the product funnel?
+Which steps in the funnel have largest drop off points?
+  
+| PAGE_VIEW_SESSION | ADD_TO_CART_SESSION | CHECKOUT_SESSION | PACKAGE_SHIPPED_SESSION | PCT_PAGEVIEW_TO_ADDTOCART | PCT_ADDTOCART_TO_CHECKOUT | PCT_CHECKOUT_TO_SHIP |
+|-------------------|---------------------|------------------|-------------------------|---------------------------|---------------------------|----------------------|
+|               578 |                 467 |              361 |                     335 |                      80.8 |                      77.3 |                 92.8 |
+  
+Products with worst conversions (lowest 10):
+  
+ | PRODUCT_NAME    | PCT_ADD_TO_CART |
+|-----------------|-----------------|
+| Pothos          |            37.5 |
+| Ponytail Palm   |            42.3 |
+| Money Tree      |            46.4 |
+| Snake Plant     |            46.6 |
+| Orchid          |            49.3 |
+| Pink Anthurium  |              50 |
+| Birds Nest Fern |              50 |
+| Alocasia Polly  |              50 |
+| Spider Plant    |            50.8 |
+| Philodendron    |            50.8 |
+  <details>
+  <summary>SQL</summary>
+
+  ```
+/* funnel progression */
+with summary as (
+select 
+count(distinct case when page_view_count >0 then user_id end) as page_view,
+count(distinct case when add_to_cart_count >0 then user_id end) as add_to_cart,
+count(distinct case when checkout_count >0 then user_id end) as checkout,
+count(distinct case when package_shipped_count >0 then user_id end) as package_shipped
+from DEV_DB.DBT_MONICAKIM4GMAILCOM.FCT_USER_SESSION_EVENTS
+    )
+    
+select 
+*,
+round((add_to_cart/page_view)*100,1) as pct_pageview_to_addtocart,
+round((checkout/add_to_cart)*100,1) as pct_addtocart_to_checkout,
+round((package_shipped/checkout)*100,1) as pct_checkout_to_ship
+from summary
+    
+/* product conversion rates */
+with product_conversion as (
+select 
+product_name,
+sum(page_view_count) page_views,
+sum(add_to_cart_count) add_to_carts,
+round((sum(add_to_cart_count)/sum(page_view_count))*100,1) pct_add_to_cart,
+round((sum(orders)/sum(add_to_cart_count))*100,1) as order_completion_rate
+from DEV_DB.DBT_MONICAKIM4GMAILCOM.FCT_PRODUCT_ACTIVITY_DAILY
+group by 1
+    )
+select top 10
+product_name,
+pct_add_to_cart
+from product_conversion
+order by pct_add_to_cart asc
+    
+  ```
+</details>
+
+**Part 3**
+
+Based on what I learned from this course, I'd reinforce the idea of the model layers, ensuring testing coverage and think about ways to improve testing so that we can prevent downstream reporting issues and be aware of issues sooner. 
+
+Most important things I'd be mindful of setting up a daily job (and this of course is really specific to the needs of the business; i am aware some organizations need more real-time data or may need to have more incrementality to their jobs bc on data volume). We are running off of dbt cloud so much of this is handled for us. 
+  
+In a scheduled run, would look that source files are updated, snapshots are run, then build the models, run the tests, collect information of the runs, check if any data or models weren't refreshed or stale, generate the dbt documentation and grab the manifest file. This is pretty similar to what was described in the deployment section of the week 4 materials: 
+dbt seed
+dbt snapshot 
+dbt run 
+dbt test
+load the results of the run_results for run & test
+check the snapshot-freshness
+generate the dbt documentation and load the manifest into a place where we could download/query/use
+ 
