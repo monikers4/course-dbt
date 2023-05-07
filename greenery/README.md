@@ -419,7 +419,11 @@ order by pct_add_to_cart asc
     
   ```
 </details>
+  
+Was able to successfully add an Exposure to the fct_product_activity_daily model: 
+![image](https://user-images.githubusercontent.com/120066171/236659053-50f45330-edb6-423f-899e-80807e5fcb7e.png)
 
+  
 **Part 3**
 
 Based on what I learned from this course, I'd reinforce the idea of the model layers, ensuring testing coverage and think about ways to improve testing so that we can prevent downstream reporting issues and be aware of issues sooner. 
