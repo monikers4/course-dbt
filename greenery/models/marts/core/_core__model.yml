@@ -26,5 +26,11 @@ models:
         tests:
           - unique
           - not_null
-
+  - name: fct_user_session_events
+    description: Table that contains event sessions summarized to user and session id granularity.
+    columns:
+      - name: unique_key
+        tests:
+          - unique
+          - not_null
 
