@@ -22,8 +22,10 @@ final as (
         dc.activity_date
         ,dc.product_id
         ,p.product_name
-        ,coalesce(ad.product_page_view,0) product_page_view
-        ,coalesce(ad.product_add_to_cart,0) product_add_to_cart
+        ,coalesce(ad.page_view_count,0) page_view_count
+        ,coalesce(ad.add_to_cart_count,0) add_to_cart_count
+        ,coalesce(ad.checkout_count,0) checkout_count
+        ,coalesce(ad.package_shipped_count,0) package_shipped_count
         ,coalesce(od.orders,0) as orders
         ,coalesce(od.units,0) as order_units
         ,coalesce(od.units * p.price,0) as order_revenue

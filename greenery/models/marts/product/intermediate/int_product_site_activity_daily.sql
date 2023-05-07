@@ -8,8 +8,9 @@ product_event_agg as (
     select
         product_id
         ,created_at::date as activity_date
-        ,count(case when event_type = 'page_view' then session_id end) as product_page_view
-        ,count(case when event_type = 'add_to_cart' then session_id end) as product_add_to_cart
+        {{ agg_event_types('stg_postgres__events', 'event_type') }}
+        -- ,count(case when event_type = 'page_view' then session_id end) as product_page_view
+        -- ,count(case when event_type = 'add_to_cart' then session_id end) as product_add_to_cart
 
     from events
 

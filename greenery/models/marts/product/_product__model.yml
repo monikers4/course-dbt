@@ -5,11 +5,11 @@ models:
     description: Daily aggregates of product level information; page views, add to cart, orders, units ordered and revenue.
     tests:
       - dbt_expectations.expect_column_pair_values_A_to_be_greater_than_B:
-          column_A: product_page_view
-          column_B: product_add_to_cart
+          column_A: page_view_count
+          column_B: add_to_cart_count
           or_equal: True
       - dbt_expectations.expect_column_pair_values_A_to_be_greater_than_B:
-          column_A: product_page_view
+          column_A: page_view_count
           column_B: orders
           or_equal: True
     columns:
