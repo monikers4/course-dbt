@@ -24,8 +24,6 @@ final as (
         ,p.product_name
         ,coalesce(ad.page_view_count,0) page_view_count
         ,coalesce(ad.add_to_cart_count,0) add_to_cart_count
-        ,coalesce(ad.checkout_count,0) checkout_count
-        ,coalesce(ad.package_shipped_count,0) package_shipped_count
         ,coalesce(od.orders,0) as orders
         ,coalesce(od.units,0) as order_units
         ,coalesce(od.units * p.price,0) as order_revenue

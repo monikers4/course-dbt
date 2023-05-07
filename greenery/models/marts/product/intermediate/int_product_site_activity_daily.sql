@@ -8,14 +8,13 @@ product_event_agg as (
     select
         product_id
         ,created_at::date as activity_date
-        {{ agg_event_types('stg_postgres__events', 'event_type') }}
-        -- ,count(case when event_type = 'page_view' then session_id end) as product_page_view
-        -- ,count(case when event_type = 'add_to_cart' then session_id end) as product_add_to_cart
+       -- Note: Product ids are only populated on page_view and add_to_cart events
+        ,count(case when event_type = 'page_view' then session_id end) as page_view_count
+        ,count(case when event_type = 'add_to_cart' then session_id end) as add_to_cart_count
 
     from events
 
-    where 
-    event_type in ('page_view','add_to_cart')
+    where 1=1
     and product_id is not null
 
     group by 1,2
